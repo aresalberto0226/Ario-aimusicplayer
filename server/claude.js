@@ -4,7 +4,7 @@ import { saveMessage, getPrefs } from './state.js';
 const BASE_URL = process.env.API_BASE_URL || 'https://api.deepseek.com/v1';
 
 function apiKey() {
-  return process.env.API_KEY || getPrefs().apiKey;
+  return process.env.VITE_DEEPSEEK_API_KEY || getPrefs().apiKey;
 }
 
 /**
