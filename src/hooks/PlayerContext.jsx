@@ -112,7 +112,23 @@ export const playerState = {
     a.onpause = () => notify({ type: 'pause' });
     a.onended = () => notify({ type: 'end' });
     a.ontimeupdate = () => notify({ type: 'time', time: a.currentTime });
-    a.onerror = () => notify({ type: 'error' });
+    a.onerror = async () => {
+      // Outer URL failed (VIP geo-block) — try Railway stream proxy with cookie
+      if (trackId && !a.dataset._retried) {
+        a.dataset._retried = '1';
+        const pos = a.currentTime || 0;
+        try {
+          a.src = `${API_BASE}/api/song/stream/${trackId}`;
+          await new Promise(r => { a.oncanplay = r; a.onerror = r; });
+          if (a.duration && isFinite(a.duration)) {
+            a.currentTime = pos;
+            await a.play().catch(() => {});
+            return; // success, don't fire error event
+          }
+        } catch {}
+      }
+      notify({ type: 'error' });
+    };
     return a;
   },
 

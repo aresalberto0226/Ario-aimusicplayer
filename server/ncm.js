@@ -175,21 +175,19 @@ export async function searchSong(name, artist = '') {
 export async function getSongUrl(songId) {
   if (!songId) return null;
 
-  // Primary: official outer URL (no login needed)
-  const directUrl = getDirectUrl(songId);
-  console.log(`🎵 Direct URL for song ${songId}`);
-
-  // Also try the API for a potentially higher-quality URL
+  // Primary: try the API (with cookie) for a real playable CDN URL
   try {
     const result = await song_url_v1({ id: songId, level: 'standard', cookie: COOKIE });
     const apiUrl = result?.body?.data?.[0]?.url;
     if (apiUrl) {
-      console.log(`🎵 Got API URL for song ${songId}`);
+      console.log(`🎵 API URL for song ${songId}`);
       return apiUrl;
     }
-  } catch { /* fall through to direct URL */ }
+  } catch { /* fall through */ }
 
-  return directUrl;
+  // Fallback: official outer URL (no login, works for some non-VIP songs)
+  console.log(`⚠️  No API URL for ${songId}, using outer URL`);
+  return getDirectUrl(songId);
 }
 
 /**
@@ -205,38 +203,41 @@ export async function enrichSongs(playlist) {
 
   const enriched = await Promise.all(
     playlist.map(async (track, idx) => {
-      // If track already has a valid ID from playlist matching, use it directly
-      if (track.id) {
-        console.log(`🎧 Using existing ID for "${track.name}" → ${track.id}`);
-        return {
-          name: track.name,
-          artist: track.artist,
-          album: track.album || '',
-          cover: track.cover || '',
-          id: track.id,
-          url: getDirectUrl(track.id),
-          neteaseUrl: `https://music.163.com/song?id=${track.id}`,
-        };
+      // Resolve song ID: use existing ID or search NetEase
+      let songId = track.id || null;
+      let songName = track.name;
+      let songArtist = track.artist;
+      let songCover = track.cover || '';
+
+      if (!songId) {
+        const results = await searchSong(track.name, track.artist);
+        if (results.length > 0) {
+          songId = results[0].id;
+          songName = results[0].name || track.name;
+          songArtist = results[0].artist || track.artist;
+          songCover = results[0].cover || '';
+          console.log(`✅ Found on NetEase: "${songName}" (${songId})`);
+        }
       }
 
-      // Search NetEase for the song
-      const results = await searchSong(track.name, track.artist);
-      if (results.length > 0) {
-        const best = results[0];
-        console.log(`✅ Found on NetEase: "${best.name}" (${best.id})`);
-        return {
-          name: best.name || track.name,
-          artist: best.artist || track.artist,
-          album: best.album || '',
-          cover: best.cover || '',
-          id: best.id || null,
-          url: best.id ? getDirectUrl(best.id) : null,
-          neteaseUrl: best.id ? `https://music.163.com/song?id=${best.id}` : null,
-        };
+      // Try API to get a REAL playable URL (with cookie if available)
+      if (songId) {
+        try {
+          const result = await song_url_v1({ id: songId, level: 'standard', cookie: COOKIE });
+          const apiUrl = result?.body?.data?.[0]?.url;
+          if (apiUrl) {
+            console.log(`🎵 Playable API URL for "${songName}"`);
+            return {
+              name: songName, artist: songArtist, album: '', cover: songCover,
+              id: songId, url: apiUrl,
+              neteaseUrl: `https://music.163.com/song?id=${songId}`,
+            };
+          }
+        } catch { /* fall through */ }
       }
 
-      // Search failed → use built-in default song IDs
-      console.log(`🔀 NetEase search failed for "${track.name}", using built-in default`);
+      // API returned no URL (VIP/geo-block) → use built-in song
+      console.log(`🔀 No playable URL for "${songName}", using built-in default`);
       return pickBuiltinSong();
     })
   );
