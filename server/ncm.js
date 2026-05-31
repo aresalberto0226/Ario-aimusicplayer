@@ -180,8 +180,9 @@ export async function getSongUrl(songId) {
     const result = await song_url_v1({ id: songId, level: 'standard', cookie: COOKIE });
     const apiUrl = result?.body?.data?.[0]?.url;
     if (apiUrl) {
+      // Upgrade to HTTPS — browsers block mixed content
       console.log(`🎵 API URL for song ${songId}`);
-      return apiUrl;
+      return apiUrl.replace(/^http:/, 'https:');
     }
   } catch { /* fall through */ }
 
@@ -226,10 +227,12 @@ export async function enrichSongs(playlist) {
           const result = await song_url_v1({ id: songId, level: 'standard', cookie: COOKIE });
           const apiUrl = result?.body?.data?.[0]?.url;
           if (apiUrl) {
+            // Upgrade to HTTPS — browsers block mixed content on HTTPS pages
+            const httpsUrl = apiUrl.replace(/^http:/, 'https:');
             console.log(`🎵 Playable API URL for "${songName}"`);
             return {
               name: songName, artist: songArtist, album: '', cover: songCover,
-              id: songId, url: apiUrl,
+              id: songId, url: httpsUrl,
               neteaseUrl: `https://music.163.com/song?id=${songId}`,
             };
           }
