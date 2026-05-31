@@ -113,7 +113,7 @@ export default function useSpeech(lang = 'en') {
     utterance.lang = lang === 'zh' ? 'zh-CN' : 'en-US';
     utterance.rate = 1.10;
     utterance.pitch = 1.05;
-    utterance.volume = 0.35;
+    utterance.volume = 0.20;
 
     const voice = pickVoice();
     if (voice) utterance.voice = voice;
