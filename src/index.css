@@ -1,0 +1,295 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cyber-bg: #020008;
+  --color-cyber-surface: #0a0a1e;
+  --color-cyber-card: #111133;
+  --color-cyber-purple: #b300ff;
+  --color-cyber-cyan: #00f0ff;
+  --color-cyber-pink: #ff2d78;
+  --color-cyber-green: #39ff14;
+  --color-cyber-gold: #ffb800;
+  --color-cyber-text: #e0e0f0;
+  --color-cyber-muted: #6666aa;
+  --font-display: 'Orbitron', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* ===== NEBULA BACKGROUND — animated cosmic gradient ===== */
+@keyframes nebulaShift {
+  0% {
+    background-position: 0% 30%, 100% 70%, 30% 0%, 70% 100%;
+  }
+  25% {
+    background-position: 100% 20%, 0% 80%, 70% 100%, 30% 0%;
+  }
+  50% {
+    background-position: 70% 80%, 30% 30%, 100% 50%, 0% 50%;
+  }
+  75% {
+    background-position: 30% 100%, 70% 0%, 0% 30%, 100% 70%;
+  }
+  100% {
+    background-position: 0% 30%, 100% 70%, 30% 0%, 70% 100%;
+  }
+}
+
+/* ===== BASE ===== */
+html, body {
+  background: var(--color-cyber-bg);
+  color: var(--color-cyber-text);
+  font-family: var(--font-body);
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* Nebula layer — rich shifting colored gradients */
+body {
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(160, 0, 220, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 60%, rgba(0, 200, 240, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(60, 0, 120, 0.20) 0%, transparent 60%),
+    radial-gradient(ellipse at 40% 20%, rgba(0, 180, 220, 0.10) 0%, transparent 45%),
+    var(--color-cyber-bg);
+  background-size: 250% 250%;
+  animation: nebulaShift 40s ease-in-out infinite;
+}
+#root { height: 100%; position: relative; }
+
+/* ===== PIXEL ART CUSTOM CURSOR ===== */
+/* 16x16 pixel crosshair — cyberpunk neon green/cyan */
+* {
+  cursor: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='7' y='0' width='2' height='5' fill='%2300f0ff'/%3E%3Crect x='7' y='11' width='2' height='5' fill='%2300f0ff'/%3E%3Crect x='0' y='7' width='5' height='2' fill='%2300f0ff'/%3E%3Crect x='11' y='7' width='5' height='2' fill='%2300f0ff'/%3E%3Crect x='7' y='7' width='2' height='2' fill='%23b300ff'/%3E%3Crect x='7' y='5' width='2' height='2' fill='%2300f0ff' opacity='0.5'/%3E%3Crect x='7' y='9' width='2' height='2' fill='%2300f0ff' opacity='0.5'/%3E%3Crect x='5' y='7' width='2' height='2' fill='%2300f0ff' opacity='0.5'/%3E%3Crect x='9' y='7' width='2' height='2' fill='%2300f0ff' opacity='0.5'/%3E%3C/svg%3E") 8 8, auto;
+}
+/* Restore default cursor for interactive elements */
+button, a, input, textarea, select, [role="button"], [onClick] {
+  cursor: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='7' y='0' width='2' height='5' fill='%2300f0ff'/%3E%3Crect x='7' y='11' width='2' height='5' fill='%2300f0ff'/%3E%3Crect x='0' y='7' width='5' height='2' fill='%2300f0ff'/%3E%3Crect x='11' y='7' width='5' height='2' fill='%2300f0ff'/%3E%3Crect x='7' y='7' width='2' height='2' fill='%23b300ff'/%3E%3Crect x='7' y='5' width='2' height='2' fill='%2300f0ff' opacity='0.5'/%3E%3Crect x='7' y='9' width='2' height='2' fill='%2300f0ff' opacity='0.5'/%3E%3Crect x='5' y='7' width='2' height='2' fill='%2300f0ff' opacity='0.5'/%3E%3Crect x='9' y='7' width='2' height='2' fill='%2300f0ff' opacity='0.5'/%3E%3C/svg%3E") 8 8, pointer;
+}
+
+/* ===== CYBERPUNK PERSPECTIVE GRID ===== */
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.12;
+  background:
+    /* Horizontal lines — denser toward bottom (perspective illusion) */
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(179, 0, 255, 0.15) 2px,
+      rgba(179, 0, 255, 0.15) 3px
+    ),
+    /* Vertical lines */
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 40px,
+      rgba(0, 240, 255, 0.08) 40px,
+      rgba(0, 240, 255, 0.08) 41px
+    ),
+    /* Perspective grid — converging lines from center-bottom */
+    linear-gradient(
+      180deg,
+      rgba(179, 0, 255, 0.06) 0%,
+      rgba(0, 240, 255, 0.04) 50%,
+      transparent 100%
+    );
+}
+
+/* ===== VIGNETTE ===== */
+#root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(2, 0, 8, 0.3) 70%,
+    rgba(2, 0, 8, 0.6) 85%,
+    rgba(2, 0, 8, 0.85) 100%
+  );
+}
+
+/* ===== SCANLINES OVERLAY ===== */
+/* ===== FILM GRAIN OVERLAY ===== */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-cyber-purple);
+  border-radius: 2px;
+  box-shadow: 0 0 6px var(--color-cyber-purple);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-glow-purple {
+  0%, 100% { box-shadow: 0 0 5px var(--color-cyber-purple), 0 0 10px rgba(179,0,255,0.3); }
+  50% { box-shadow: 0 0 15px var(--color-cyber-purple), 0 0 30px rgba(179,0,255,0.5), 0 0 50px rgba(179,0,255,0.2); }
+}
+@keyframes pulse-glow-cyan {
+  0%, 100% { box-shadow: 0 0 5px var(--color-cyber-cyan), 0 0 10px rgba(0,240,255,0.3); }
+  50% { box-shadow: 0 0 15px var(--color-cyber-cyan), 0 0 30px rgba(0,240,255,0.5), 0 0 50px rgba(0,240,255,0.2); }
+}
+@keyframes pulse-glow-gold {
+  0%, 100% { box-shadow: 0 0 5px var(--color-cyber-gold), 0 0 10px rgba(255,184,0,0.3); }
+  50% { box-shadow: 0 0 15px var(--color-cyber-gold), 0 0 30px rgba(255,184,0,0.5), 0 0 50px rgba(255,184,0,0.2); }
+}
+@keyframes glitch {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, -1px); }
+  80% { transform: translate(1px, 1px); }
+}
+@keyframes glitch-clip {
+  0%, 100% { clip-path: inset(0 0 90% 0); }
+  25% { clip-path: inset(20% 0 50% 0); }
+  50% { clip-path: inset(50% 0 20% 0); }
+  75% { clip-path: inset(80% 0 5% 0); }
+}
+@keyframes neon-border {
+  0%, 100% { border-color: rgba(179,0,255,0.3); }
+  50% { border-color: rgba(179,0,255,0.8); }
+}
+@keyframes bar-jump {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+  50% { transform: translateY(-20px) translateX(10px); opacity: 0.6; }
+}
+
+/* ===== UTILITY CLASSES ===== */
+.animate-spin-vinyl { animation: spin 3s linear infinite; }
+.animate-spin-slow { animation: spin 8s linear infinite; }
+.animate-slide-up { animation: slideUp 0.4s ease-out; }
+.animate-pulse-purple { animation: pulse-glow-purple 2s ease-in-out infinite; }
+.animate-pulse-cyan { animation: pulse-glow-cyan 2s ease-in-out infinite; }
+.animate-pulse-gold { animation: pulse-glow-gold 2s ease-in-out infinite; }
+.animate-glitch:hover { animation: glitch 0.3s ease-in-out; }
+.animate-neon-border { animation: neon-border 2s ease-in-out infinite; }
+
+.paused { animation-play-state: paused; }
+
+/* ===== GLOW TEXT ===== */
+.glow-purple { text-shadow: 0 0 10px var(--color-cyber-purple), 0 0 30px var(--color-cyber-purple), 0 0 50px rgba(179,0,255,0.5); }
+.glow-cyan { text-shadow: 0 0 10px var(--color-cyber-cyan), 0 0 30px var(--color-cyber-cyan), 0 0 50px rgba(0,240,255,0.5); }
+.glow-gold { text-shadow: 0 0 10px var(--color-cyber-gold), 0 0 30px var(--color-cyber-gold), 0 0 50px rgba(255,184,0,0.5); }
+.glow-pink { text-shadow: 0 0 10px var(--color-cyber-pink), 0 0 30px var(--color-cyber-pink); }
+
+/* ===== CYBER BUTTON BASE ===== */
+.cyber-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.cyber-btn:hover {
+  box-shadow: 0 0 20px var(--color-cyber-purple), 0 0 40px rgba(179,0,255,0.3);
+  transform: scale(1.05);
+}
+.cyber-btn:active {
+  transform: scale(0.95);
+}
+
+/* ===== CYBER CARD ===== */
+.cyber-card {
+  background: var(--color-cyber-card);
+  border: 1px solid rgba(179,0,255,0.15);
+  transition: all 0.3s ease;
+}
+.cyber-card:hover {
+  border-color: rgba(179,0,255,0.5);
+  box-shadow: 0 0 20px rgba(179,0,255,0.1), inset 0 0 20px rgba(179,0,255,0.05);
+}
+
+/* ===== EDGE GLOW — neon accent at screen edges ===== */
+#root::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  border: 1px solid transparent;
+  box-shadow:
+    inset 0 0 80px 20px rgba(179, 0, 255, 0.04),
+    inset 0 0 40px 10px rgba(0, 240, 255, 0.03),
+    0 0 2px 1px rgba(179, 0, 255, 0.06);
+}
+
+/* ===== SCREEN FLICKER — subtle random brightness shift ===== */
+@keyframes flicker {
+  0%, 99.5%, 100% { opacity: 1; }
+  99.6% { opacity: 0.95; }
+  99.7% { opacity: 1; }
+  99.8% { opacity: 0.9; }
+  99.9% { opacity: 1; }
+}
+#root {
+  animation: flicker 8s infinite;
+}
+
+/* ===== HOLOGRAPHIC SHIMMER (on supported elements) ===== */
+@keyframes hologram {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.holo-shimmer {
+  background: linear-gradient(
+    135deg,
+    rgba(179, 0, 255, 0.05) 0%,
+    rgba(0, 240, 255, 0.08) 25%,
+    rgba(179, 0, 255, 0.05) 50%,
+    rgba(0, 240, 255, 0.08) 75%,
+    rgba(179, 0, 255, 0.05) 100%
+  );
+  background-size: 200% 200%;
+  animation: hologram 4s ease infinite;
+}
