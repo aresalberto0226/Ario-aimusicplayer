@@ -4,3 +4,4 @@ build/
 data/
 .env
 *.log
+test-api.json
