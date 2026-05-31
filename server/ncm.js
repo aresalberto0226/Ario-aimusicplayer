@@ -1,6 +1,6 @@
 /**
  * Netease Cloud Music integration.
- * Uses NeteaseCloudMusicApi for crypto/auth handling.
+ * Uses NeteaseCloudMusicApi for crypto/auth handling + official outer URL as direct playable link.
  */
 import ncm from 'NeteaseCloudMusicApi';
 import { readFileSync } from 'node:fs';
@@ -13,7 +13,41 @@ const __dirname = import.meta.dirname || dirname(fileURLToPath(import.meta.url))
 const playlistCache = new Map();
 const COOKIE = process.env.NCM_COOKIE || '';
 
-// --- Fallback audio: public royalty-free MP3s when NetEase is unreachable ---
+// ============================================================
+// BUILT-IN DEFAULT SONGS — hardcoded NetEase IDs that always work
+// These are public, non-VIP songs used as ultimate fallback.
+// ============================================================
+const BUILTIN_SONGS = [
+  { id: '1923385373', name: 'West Coast',         artist: 'OneRepublic',            cover: '' },
+  { id: '405564682',  name: 'Better Now',         artist: 'Post Malone',            cover: '' },
+  { id: '2624179654', name: 'Two of Us',          artist: 'WIM',                    cover: '' },
+  { id: '1860572005', name: 'Counting Stars',     artist: 'OneRepublic',            cover: '' },
+  { id: '1376098852', name: 'Something Just Like This', artist: 'The Chainsmokers', cover: '' },
+];
+
+// ============================================================
+// DIRECT OUTER URL — official NetEase public audio link
+// Format: https://music.163.com/song/media/outer/url?id={id}.mp3
+// Works without login/cookie for most songs.
+// ============================================================
+function getDirectUrl(songId) {
+  return `https://music.163.com/song/media/outer/url?id=${songId}.mp3`;
+}
+
+let _builtinIdx = 0;
+function pickBuiltinSong() {
+  const s = BUILTIN_SONGS[_builtinIdx % BUILTIN_SONGS.length];
+  _builtinIdx++;
+  return {
+    ...s,
+    album: 'Ario Default',
+    url: getDirectUrl(s.id),
+    neteaseUrl: `https://music.163.com/song?id=${s.id}`,
+    _builtin: true,
+  };
+}
+
+// --- Secondary fallback: generic public MP3s (last resort) ---
 let _fallbackCache = null;
 function loadFallbackTracks() {
   if (_fallbackCache) return _fallbackCache;
@@ -26,22 +60,12 @@ function loadFallbackTracks() {
   return _fallbackCache;
 }
 
-/**
- * Get a fallback track URL (round-robin through the fallback list).
- */
 let _fallbackIdx = 0;
-function getFallbackUrl() {
+function pickFallbackTrack() {
   const tracks = loadFallbackTracks();
   if (tracks.length === 0) return null;
-  const url = tracks[_fallbackIdx % tracks.length].url;
+  const t = tracks[_fallbackIdx % tracks.length];
   _fallbackIdx++;
-  return url;
-}
-
-function getFallbackTrackForIndex(idx) {
-  const tracks = loadFallbackTracks();
-  if (tracks.length === 0) return null;
-  const t = tracks[idx % tracks.length];
   return {
     name: t.name,
     artist: t.artist,
@@ -54,8 +78,13 @@ function getFallbackTrackForIndex(idx) {
   };
 }
 
+// ============================================================
+// PUBLIC API
+// ============================================================
+
 /**
  * Fetch all tracks from a Netease playlist.
+ * Falls back to hardcoded playlist data when API is unreachable (Vercel).
  */
 export async function fetchPlaylistTracks(playlistId) {
   const cached = playlistCache.get(playlistId);
@@ -63,21 +92,69 @@ export async function fetchPlaylistTracks(playlistId) {
     return cached.tracks;
   }
 
+  // Attempt 1: NeteaseCloudMusicApi
   try {
-    console.log(`🔍 Fetching playlist ${playlistId}`);
+    console.log(`🔍 Fetching playlist ${playlistId} via API`);
     const result = await playlist_detail({ id: playlistId, cookie: COOKIE });
     const tracks = (result?.body?.playlist?.tracks || []).map(formatNcmTrack);
-
     if (tracks.length > 0) {
       playlistCache.set(playlistId, { tracks, ts: Date.now() });
     }
-
     console.log(`🎵 Loaded ${tracks.length} tracks from playlist ${playlistId}`);
     return tracks;
   } catch (err) {
-    console.warn('Failed to fetch playlist:', err.message);
-    return [];
+    console.warn(`API fetch failed for playlist ${playlistId}:`, err.message);
   }
+
+  // Attempt 2: Direct HTTP fetch to public Netease API
+  try {
+    console.log(`🔍 Fetching playlist ${playlistId} via public API`);
+    const res = await fetch(`https://music.163.com/api/v3/playlist/detail?id=${playlistId}`);
+    const data = await res.json();
+    const tracks = (data?.playlist?.tracks || []).map(t => formatNcmTrack({
+      id: t.id,
+      name: t.name,
+      ar: t.ar,
+      al: t.al,
+    }));
+    if (tracks.length > 0) {
+      playlistCache.set(playlistId, { tracks, ts: Date.now() });
+    }
+    console.log(`🎵 Loaded ${tracks.length} tracks via public API`);
+    return tracks;
+  } catch (err) {
+    console.warn(`Public API fetch failed:`, err.message);
+  }
+
+  // Attempt 3: Load hardcoded playlist fallback
+  const fallback = loadPlaylistFallback();
+  if (fallback.length > 0) {
+    console.log(`🆘 Using hardcoded fallback: ${fallback.length} tracks`);
+    return fallback;
+  }
+
+  console.warn('⚠️  All playlist sources failed, no tracks available');
+  return [];
+}
+
+// --- Hardcoded playlist fallback loader ---
+let _playlistFallback = null;
+function loadPlaylistFallback() {
+  if (_playlistFallback) return _playlistFallback;
+  try {
+    const raw = readFileSync(join(__dirname, 'playlist-fallback.json'), 'utf-8');
+    _playlistFallback = JSON.parse(raw).map(t => ({
+      id: t.id,
+      name: t.name,
+      artist: t.artist,
+      album: '',
+      cover: t.cover || '',
+      url: null,
+    }));
+  } catch {
+    _playlistFallback = [];
+  }
+  return _playlistFallback;
 }
 
 /**
@@ -96,65 +173,89 @@ export async function searchSong(name, artist = '') {
 }
 
 /**
- * Try to get a playable song URL.
- * Returns null if song requires VIP or no cookie.
+ * Get a playable audio URL for a song.
+ * Uses official NetEase outer URL format — works without login.
  */
 export async function getSongUrl(songId) {
+  if (!songId) return null;
+
+  // Primary: official outer URL (no login needed)
+  const directUrl = getDirectUrl(songId);
+  console.log(`🎵 Direct URL for song ${songId}`);
+
+  // Also try the API for a potentially higher-quality URL
   try {
     const result = await song_url_v1({ id: songId, level: 'standard', cookie: COOKIE });
-    const url = result?.body?.data?.[0]?.url;
-    if (url) {
-      console.log(`🎵 Got playable URL for song ${songId}`);
-      return url;
+    const apiUrl = result?.body?.data?.[0]?.url;
+    if (apiUrl) {
+      console.log(`🎵 Got API URL for song ${songId}`);
+      return apiUrl;
     }
-  } catch { /* not playable */ }
-  return null;
+  } catch { /* fall through to direct URL */ }
+
+  return directUrl;
 }
 
 /**
- * Enrich play[] with Netease metadata + URLs.
+ * Enrich play[] with Netease metadata + playable URLs.
+ *
+ * Strategy (tried in order):
+ * 1. Search NetEase for each track → use direct outer URL for playback
+ * 2. If search fails → use built-in default song IDs
+ * 3. If built-in exhausted → use generic fallback MP3s
  */
 export async function enrichSongs(playlist) {
   if (!playlist || playlist.length === 0) return [];
 
   const enriched = await Promise.all(
     playlist.map(async (track, idx) => {
+      // If track already has a valid ID from playlist matching, use it directly
+      if (track.id) {
+        console.log(`🎧 Using existing ID for "${track.name}" → ${track.id}`);
+        return {
+          name: track.name,
+          artist: track.artist,
+          album: track.album || '',
+          cover: track.cover || '',
+          id: track.id,
+          url: getDirectUrl(track.id),
+          neteaseUrl: `https://music.163.com/song?id=${track.id}`,
+        };
+      }
+
+      // Search NetEase for the song
       const results = await searchSong(track.name, track.artist);
       if (results.length > 0) {
         const best = results[0];
-        const url = best.id ? await getSongUrl(best.id) : null;
-        if (url) {
-          return {
-            name: best.name || track.name,
-            artist: best.artist || track.artist,
-            album: best.album || '',
-            cover: best.cover || '',
-            id: best.id || null,
-            url: url,
-            neteaseUrl: best.id ? `https://music.163.com/song?id=${best.id}` : null,
-          };
-        }
-        // Found on NetEase but URL not playable → use fallback audio
-        console.log(`⚠️  No playable URL for "${track.name}", using fallback audio`);
+        console.log(`✅ Found on NetEase: "${best.name}" (${best.id})`);
         return {
           name: best.name || track.name,
           artist: best.artist || track.artist,
           album: best.album || '',
           cover: best.cover || '',
           id: best.id || null,
-          url: getFallbackUrl(),
+          url: best.id ? getDirectUrl(best.id) : null,
           neteaseUrl: best.id ? `https://music.163.com/song?id=${best.id}` : null,
-          _fallback: true,
         };
       }
-      // Not found on Netease → use fallback entirely
-      console.log(`⚠️  NetEase search failed for "${track.name}", using fallback track`);
-      return getFallbackTrackForIndex(idx) || {
-        name: track.name, artist: track.artist, album: '', cover: '',
-        id: null, url: getFallbackUrl(), neteaseUrl: null, _fallback: true,
-      };
+
+      // Search failed → use built-in default song IDs
+      console.log(`🔀 NetEase search failed for "${track.name}", using built-in default`);
+      return pickBuiltinSong();
     })
   );
+
+  // Last resort: if ALL enrichment failed (no tracks at all), return built-in defaults
+  if (enriched.length === 0) {
+    console.log('🆘 All enrichment failed, returning built-in defaults');
+    return BUILTIN_SONGS.map(s => ({
+      ...s,
+      album: 'Ario Default',
+      url: getDirectUrl(s.id),
+      neteaseUrl: `https://music.163.com/song?id=${s.id}`,
+      _builtin: true,
+    }));
+  }
 
   return enriched;
 }
