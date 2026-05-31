@@ -10,6 +10,7 @@ import { playHover, playClick } from '../hooks/useSound.js';
 import { arioState } from '../hooks/arioState.js';
 import { useLanguage } from '../hooks/LanguageContext.jsx';
 import useSpeech from '../hooks/useSpeech.js';
+import { apiPost, apiJson } from '../api.js';
 
 export default function Player({ mode = 'free' }) {
   const saved = arioState.load();
@@ -65,12 +66,11 @@ export default function Player({ mode = 'free' }) {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/chat', {
+      const data = await apiJson('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, mode, lang }),
       });
-      const data = await res.json();
 
       const arioMsg = {
         role: 'assistant',

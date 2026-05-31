@@ -8,6 +8,7 @@ import { useLanguage } from '../hooks/LanguageContext.jsx';
 import useSpeech from '../hooks/useSpeech.js';
 
 import { playHover, playClick, playStart, playNext } from '../hooks/useSound.js';
+import { API_BASE, apiPost, apiGet, apiJson } from '../api.js';
 
 function fmtTime(s) {
   if (!s || isNaN(s) || !isFinite(s)) return '0:00';
@@ -156,9 +157,8 @@ export default function MyRadio() {
       const pos = a.currentTime || 0;
       try {
         // Fetch a fresh CDN URL (Vercel-compatible), fall back to stream proxy
-        const urlRes = await fetch(`/api/song/url/${trackIdRef.current}`);
-        const urlData = await urlRes.json();
-        a.src = urlData.url || `/api/song/stream/${trackIdRef.current}?_=${Date.now()}`;
+        const urlData = await apiJson(`/api/song/url/${trackIdRef.current}`);
+        a.src = urlData.url || `${API_BASE}/api/song/stream/${trackIdRef.current}?_=${Date.now()}`;
         await new Promise(r => { a.oncanplay = r; });
         if (pos > 0) a.currentTime = pos;
         await a.play(); retryCount.current = 0; setPlaying(true);
@@ -246,8 +246,8 @@ export default function MyRadio() {
   useEffect(() => {
     if (!currentTrack?.id) { setLyrics([]); setActiveLyric(-1); return; }
     setLyrics([]); setActiveLyric(-1);
-    fetch(`/api/song/lyric/${currentTrack.id}`)
-      .then(r => r.json()).then(d => setLyrics(parseLrc(d.lrc))).catch(() => {});
+    apiJson(`/api/song/lyric/${currentTrack.id}`)
+      .then(d => setLyrics(parseLrc(d.lrc))).catch(() => {});
   }, [currentTrack?.id]);
 
   // ===== Seek =====
@@ -298,11 +298,7 @@ export default function MyRadio() {
     const newLiked = !liked;
     setLiked(newLiked);
     try {
-      await fetch(`/api/song/like/${currentTrack.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ liked: newLiked }),
-      });
+      await apiPost(`/api/song/like/${currentTrack.id}`, { liked: newLiked });
     } catch {
       setLiked(!newLiked);
     }
@@ -383,11 +379,10 @@ export default function MyRadio() {
     stopSpeech();  // stop any previous speech
     stopAudio(); setPhase('loading'); setError('');
     try {
-      const res = await fetch('/api/chat', {
+      const data = await apiJson('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: msg, mode: 'playlist', lang }),
       });
-      const data = await res.json();
       // Speak the DJ message if voice is enabled
       if (data.say && speechOn) speak(data.say);
       if (data.play?.length > 0) {

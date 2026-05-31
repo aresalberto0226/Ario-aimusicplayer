@@ -2,6 +2,7 @@ import { useState } from 'react';
 import GlitchText from '../components/GlitchText.jsx';
 import { playHover, playClick } from '../hooks/useSound.js';
 import { useLanguage } from '../hooks/LanguageContext.jsx';
+import { apiPost } from '../api.js';
 
 export default function Profile() {
   const [taste, setTaste] = useState('');
@@ -11,11 +12,7 @@ export default function Profile() {
 
   const handleSave = async () => {
     playClick();
-    await fetch('/api/prefs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ taste, routines }),
-    });
+    await apiPost('/api/prefs', { taste, routines });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };

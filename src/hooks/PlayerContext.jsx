@@ -1,3 +1,5 @@
+import { API_BASE } from '../api.js';
+
 // Single global audio singleton — one audio instance for the entire app.
 let audio = null;
 let currentTrackId = null;
@@ -81,7 +83,7 @@ export const playerState = {
     if (!trackId) return null;
 
     // Use direct CDN URL from track data if available, else fall back to stream proxy
-    const audioUrl = trackData?.url || `/api/song/stream/${trackId}`;
+    const audioUrl = trackData?.url || `${API_BASE}/api/song/stream/${trackId}`;
     const a = new Audio(audioUrl);
 
     // Connect to Web Audio analyser for reactive visualization

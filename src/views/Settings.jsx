@@ -3,6 +3,7 @@ import GlitchText from '../components/GlitchText.jsx';
 import { playHover, playClick } from '../hooks/useSound.js';
 import { useLanguage } from '../hooks/LanguageContext.jsx';
 import { getAvailableVoices } from '../hooks/useSpeech.js';
+import { apiPost } from '../api.js';
 
 const VOICE_KEY = 'ario_voice';
 
@@ -41,11 +42,7 @@ export default function Settings() {
 
   const handleSave = async () => {
     playClick();
-    await fetch('/api/prefs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiKey: apiKey || undefined }),
-    });
+    await apiPost('/api/prefs', { apiKey: apiKey || undefined });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
