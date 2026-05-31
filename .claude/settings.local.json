@@ -62,7 +62,8 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('say:', d.get\\('say',''\\)[:80]\\); print\\('play:', len\\(d.get\\('play',[]\\)\\), 'songs'\\); [print\\(f'  {p[\\\\\"name\\\\\"]} - {p[\\\\\"artist\\\\\"]} | url={p.get\\(\\\\\"url\\\\\",\\\\\"NONE\\\\\"\\)[:60]}'\\) for p in d.get\\('play',[]\\)]\")",
       "Bash(grep -oP '\"say\":\"[^\"]{0,80}')",
       "Bash(curl -sk -X POST https://web-production-904140.up.railway.app/api/chat -H 'Content-Type: application/json' -d '{\"message\":\"feeling tired\",\"mode\":\"free\",\"lang\":\"en\"}')",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(git rm *)"
     ]
   }
 }

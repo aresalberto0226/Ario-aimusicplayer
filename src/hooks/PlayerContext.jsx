@@ -4,7 +4,7 @@ import { API_BASE } from '../api.js';
 let audio = null;
 let currentTrackId = null;
 let currentTrackData = null; // the full track object { id, name, artist, cover, ... }
-let _vol = 0.3;
+let _vol = 0.15;
 let _muted = false;
 let listeners = new Set();
 
