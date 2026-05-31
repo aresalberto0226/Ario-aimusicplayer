@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { writeFileSync } from 'fs';
 import ncm from 'NeteaseCloudMusicApi';
 
 const { playlist_detail } = ncm;
@@ -12,5 +13,5 @@ const tracks = (res.body?.playlist?.tracks || []).map(t => ({
   cover: (t.al || {}).picUrl || ''
 }));
 
-console.log(JSON.stringify(tracks, null, 2));
-console.error(`\nTotal: ${tracks.length} tracks`);
+writeFileSync('server/playlist-fallback.json', JSON.stringify(tracks, null, 2));
+console.error(`Wrote ${tracks.length} tracks to server/playlist-fallback.json`);
