@@ -80,7 +80,9 @@ export const playerState = {
     destroyAudio();
     if (!trackId) return null;
 
-    const a = new Audio(`/api/song/stream/${trackId}`);
+    // Use direct CDN URL from track data if available, else fall back to stream proxy
+    const audioUrl = trackData?.url || `/api/song/stream/${trackId}`;
+    const a = new Audio(audioUrl);
 
     // Connect to Web Audio analyser for reactive visualization
     try {

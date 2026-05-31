@@ -1,6 +1,7 @@
 {
   "name": "ario",
   "version": "1.0.0",
+  "engines": { "node": "22.x" },
   "description": "Ario — personal AI DJ. Tell me your mood, I'll spin the perfect tracks.",
   "type": "module",
   "scripts": {

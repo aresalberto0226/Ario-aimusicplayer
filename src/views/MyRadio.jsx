@@ -155,7 +155,10 @@ export default function MyRadio() {
       retryCount.current++;
       const pos = a.currentTime || 0;
       try {
-        a.src = `/api/song/stream/${trackIdRef.current}?_=${Date.now()}`;
+        // Fetch a fresh CDN URL (Vercel-compatible), fall back to stream proxy
+        const urlRes = await fetch(`/api/song/url/${trackIdRef.current}`);
+        const urlData = await urlRes.json();
+        a.src = urlData.url || `/api/song/stream/${trackIdRef.current}?_=${Date.now()}`;
         await new Promise(r => { a.oncanplay = r; });
         if (pos > 0) a.currentTime = pos;
         await a.play(); retryCount.current = 0; setPlaying(true);

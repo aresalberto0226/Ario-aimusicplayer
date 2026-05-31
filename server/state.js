@@ -20,7 +20,11 @@ function load() {
 }
 
 function save(state) {
-  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), 'utf-8');
+  try {
+    writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), 'utf-8');
+  } catch {
+    // Vercel filesystem is read-only — state persists in memory for the function's lifetime
+  }
 }
 
 const state = load();
