@@ -99,9 +99,10 @@ export async function fetchPlaylistTracks(playlistId) {
     const tracks = (result?.body?.playlist?.tracks || []).map(formatNcmTrack);
     if (tracks.length > 0) {
       playlistCache.set(playlistId, { tracks, ts: Date.now() });
+      console.log(`🎵 Loaded ${tracks.length} tracks from playlist ${playlistId}`);
+      return tracks;
     }
-    console.log(`🎵 Loaded ${tracks.length} tracks from playlist ${playlistId}`);
-    return tracks;
+    console.warn(`API returned 0 tracks for playlist ${playlistId}, trying next source...`);
   } catch (err) {
     console.warn(`API fetch failed for playlist ${playlistId}:`, err.message);
   }
@@ -119,9 +120,10 @@ export async function fetchPlaylistTracks(playlistId) {
     }));
     if (tracks.length > 0) {
       playlistCache.set(playlistId, { tracks, ts: Date.now() });
+      console.log(`🎵 Loaded ${tracks.length} tracks via public API`);
+      return tracks;
     }
-    console.log(`🎵 Loaded ${tracks.length} tracks via public API`);
-    return tracks;
+    console.warn(`Public API returned 0 tracks, trying fallback...`);
   } catch (err) {
     console.warn(`Public API fetch failed:`, err.message);
   }
