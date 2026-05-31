@@ -6,6 +6,7 @@ import ncm from 'NeteaseCloudMusicApi';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import playlistFallbackData from './playlist-fallback.js';
 
 const { playlist_detail, cloudsearch, song_url_v1, lyric, like } = ncm;
 
@@ -139,24 +140,17 @@ export async function fetchPlaylistTracks(playlistId) {
   return [];
 }
 
-// --- Hardcoded playlist fallback loader ---
-let _playlistFallback = null;
+// --- Hardcoded playlist fallback (JS module import, no file I/O on Vercel) ---
 function loadPlaylistFallback() {
-  if (_playlistFallback) return _playlistFallback;
-  try {
-    const raw = readFileSync(join(__dirname, 'playlist-fallback.json'), 'utf-8');
-    _playlistFallback = JSON.parse(raw).map(t => ({
-      id: t.id,
-      name: t.name,
-      artist: t.artist,
-      album: '',
-      cover: t.cover || '',
-      url: null,
-    }));
-  } catch {
-    _playlistFallback = [];
-  }
-  return _playlistFallback;
+  if (!playlistFallbackData || playlistFallbackData.length === 0) return [];
+  return playlistFallbackData.map(t => ({
+    id: t.id,
+    name: t.name,
+    artist: t.artist,
+    album: '',
+    cover: t.cover || '',
+    url: null,
+  }));
 }
 
 /**
