@@ -1,13 +1,19 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = join(import.meta.dirname, '..');
+const __dirname = import.meta.dirname || dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, '..');
 const DATA_DIR = join(ROOT, 'data');
 const STATE_FILE = join(DATA_DIR, 'state.json');
 
-// Ensure data directory exists
-if (!existsSync(DATA_DIR)) {
-  mkdirSync(DATA_DIR, { recursive: true });
+// Ensure data directory exists (safe for Vercel read-only filesystem)
+try {
+  if (!existsSync(DATA_DIR)) {
+    mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch {
+  // Vercel: filesystem is read-only — state persists in memory only
 }
 
 function load() {

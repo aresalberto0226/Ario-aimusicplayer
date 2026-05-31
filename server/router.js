@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Router } from 'express';
 import { chat } from './claude.js';
 import { enrichSongs, fetchPlaylistTracks, getSongUrl, getLyric, likeSong } from './ncm.js';
@@ -180,7 +181,7 @@ router.get('/song/lyric/:id', async (req, res) => {
 
 async function safeLoadPlaylists() {
   try {
-    const raw = await readFile(join(import.meta.dirname, '..', 'user', 'playlists.json'), 'utf-8');
+    const raw = await readFile(join((import.meta.dirname || dirname(fileURLToPath(import.meta.url))), '..', 'user', 'playlists.json'), 'utf-8');
     return JSON.parse(raw);
   } catch { return null; }
 }

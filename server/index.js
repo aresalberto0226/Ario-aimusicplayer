@@ -1,8 +1,11 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import router from './router.js';
+
+const __dirname = import.meta.dirname || dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -16,7 +19,7 @@ app.use('/api', router);
 
 // In production, serve the built frontend
 if (process.env.NODE_ENV === 'production') {
-  const dist = join(import.meta.dirname, '..', 'dist');
+  const dist = join(__dirname, '..', 'dist');
   app.use(express.static(dist));
   app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {

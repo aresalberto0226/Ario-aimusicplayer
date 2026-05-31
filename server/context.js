@@ -1,9 +1,11 @@
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { getRecentMessages } from './state.js';
 import { fetchPlaylistTracks } from './ncm.js';
 
-const ROOT = join(import.meta.dirname, '..');
+const __dirname = import.meta.dirname || dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, '..');
 
 /**
  * Assemble the full system prompt for Claude.
