@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Lo-fi Dream",
+    "artist": "Ario Fallback",
+    "cover": "",
+    "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    "mood": "chill"
+  },
+  {
+    "name": "Ambient Waves",
+    "artist": "Ario Fallback",
+    "cover": "",
+    "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    "mood": "calm"
+  },
+  {
+    "name": "Jazzy Night",
+    "artist": "Ario Fallback",
+    "cover": "",
+    "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    "mood": "late night"
+  },
+  {
+    "name": "Neon Pulse",
+    "artist": "Ario Fallback",
+    "cover": "",
+    "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    "mood": "energy"
+  },
+  {
+    "name": "Rainy Evening",
+    "artist": "Ario Fallback",
+    "cover": "",
+    "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+    "mood": "feels"
+  },
+  {
+    "name": "City Lights",
+    "artist": "Ario Fallback",
+    "cover": "",
+    "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
+    "mood": "chill"
+  },
+  {
+    "name": "Cosmic Drift",
+    "artist": "Ario Fallback",
+    "cover": "",
+    "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3",
+    "mood": "calm"
+  },
+  {
+    "name": "Late Night Drive",
+    "artist": "Ario Fallback",
+    "cover": "",
+    "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
+    "mood": "late night"
+  }
+]

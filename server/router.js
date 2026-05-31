@@ -34,6 +34,7 @@ router.post('/chat', async (req, res) => {
           playlistTracks.push(...(await fetchPlaylistTracks(id)));
         }
         result.play = matchPlaylistTracks(result.play, playlistTracks);
+        result.play = await enrichSongs(result.play);
       } else {
         result.play = await enrichSongs(result.play);
       }
